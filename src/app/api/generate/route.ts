@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI, Schema, Type } from "@google/generative-ai";
+import { GoogleGenerativeAI, ResponseSchema, SchemaType } from "@google/generative-ai";
 
 import { validatePayload } from "@/lib/validation";
 
@@ -30,28 +30,28 @@ export async function POST(req: NextRequest) {
     
     // --- GOOGLE SERVICES: Advanced Structured Outputs ---
     // We explicitly define the expected schema so Gemini returns flawless JSON.
-    const emailOptionsSchema: Schema = {
-      type: Type.OBJECT,
+    const emailOptionsSchema: ResponseSchema = {
+      type: SchemaType.OBJECT,
       properties: {
         options: {
-          type: Type.ARRAY,
+          type: SchemaType.ARRAY,
           items: {
-            type: Type.OBJECT,
+            type: SchemaType.OBJECT,
             properties: {
               angle: { 
-                type: Type.STRING, 
+                type: SchemaType.STRING, 
                 description: "The core angle or theme of the email (e.g., Congratulate, Pain Point)." 
               },
               subject: { 
-                type: Type.STRING, 
+                type: SchemaType.STRING, 
                 description: "A short, catchy, non-spammy subject line." 
               },
               body: { 
-                type: Type.STRING, 
+                type: SchemaType.STRING, 
                 description: "The email body. Max 75 words. 6th grade reading level." 
               },
               citation: { 
-                type: Type.STRING, 
+                type: SchemaType.STRING, 
                 description: "A short sentence explaining what specific piece of context was used to generate this angle." 
               },
             },
