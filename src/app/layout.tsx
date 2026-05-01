@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Lumina.ai - Empathic Intelligence",
-  description: "Enterprise sales copilot powered by Gemini 1.5 Pro",
+  title: "Nexus AI - The Revenue Intelligence Cloud",
+  description: "Enterprise sales copilot powered by Google Cloud and Gemini 1.5 Pro",
 };
 
 export default function RootLayout({

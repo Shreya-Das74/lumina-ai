@@ -4,10 +4,17 @@ import { BrainCircuit } from "lucide-react";
 
 interface LoadingStateProps {
   progressStep: number;
-  loadingSteps: string[];
 }
 
-export const LoadingState = ({ progressStep, loadingSteps }: LoadingStateProps) => {
+export const LoadingState = ({ progressStep }: LoadingStateProps) => {
+  const steps = [
+    "Authenticating via Google Workspace IAM...",
+    "Querying Vertex AI Search for prospect history...",
+    "Executing BigQuery ML intent prediction...",
+    "Drafting via Gemini 1.5 Pro...",
+    "Securing payload via Secret Manager..."
+  ];
+
   return (
     <motion.div
       key="loading"
@@ -21,7 +28,7 @@ export const LoadingState = ({ progressStep, loadingSteps }: LoadingStateProps) 
           className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
           initial={{ width: "0%" }}
           animate={{ width: "100%" }}
-          transition={{ duration: loadingSteps.length * 1.2, ease: "linear" }}
+          transition={{ duration: steps.length * 1.2, ease: "linear" }}
         />
       </div>
 
@@ -48,7 +55,7 @@ export const LoadingState = ({ progressStep, loadingSteps }: LoadingStateProps) 
             transition={{ duration: 0.3 }}
             className="text-blue-400 font-medium font-mono text-sm absolute w-full"
           >
-            &gt; {loadingSteps[progressStep]}
+            &gt; {steps[progressStep]}
           </motion.p>
         </AnimatePresence>
       </div>

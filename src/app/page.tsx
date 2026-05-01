@@ -7,12 +7,16 @@ import { Sidebar } from "../components/Sidebar";
 import { InputForm } from "../components/InputForm";
 import { LoadingState } from "../components/LoadingState";
 import { EmailCard } from "../components/EmailCard";
+import { IntentDashboard } from "../components/IntentDashboard";
+import { WorkspaceHub } from "../components/WorkspaceHub";
+import { SparringArena } from "../components/SparringArena";
 import type { EmailOption } from "../types";
 
 export default function LuminaApp() {
   const [prospectName, setProspectName] = useState("");
   const [company, setCompany] = useState("");
   const [context, setContext] = useState("");
+  const [activeTab, setActiveTab] = useState("copilot");
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [options, setOptions] = useState<EmailOption[] | null>(null);
@@ -20,26 +24,20 @@ export default function LuminaApp() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   
   const [progressStep, setProgressStep] = useState(0);
-  const loadingSteps = [
-    "Ingesting prospect digital footprint...",
-    "Analyzing recent 10-K filings and news...",
-    "Routing to Empathy Agent...",
-    "Drafting hyper-personalized sequences...",
-    "Applying Enterprise safeguards..."
-  ];
+  const loadingStepsLength = 5;
 
   useEffect(() => {
     if (isGenerating) {
       let currentStep = 0;
       const interval = setInterval(() => {
-        if (currentStep < loadingSteps.length - 1) {
+        if (currentStep < loadingStepsLength - 1) {
           currentStep++;
           setProgressStep(currentStep);
         }
       }, 1200);
       return () => clearInterval(interval);
     }
-  }, [isGenerating, loadingSteps.length]);
+  }, [isGenerating]);
 
   const handleGenerate = async () => {
     if (!prospectName || !company || !context) return;
@@ -79,7 +77,7 @@ export default function LuminaApp() {
 
   return (
     <div className="flex min-h-screen bg-[#050505] selection:bg-blue-500/30 text-white font-sans">
-      <Sidebar />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Header */}
@@ -87,7 +85,9 @@ export default function LuminaApp() {
           <nav aria-label="Breadcrumb">
             <ol className="flex items-center gap-2 text-sm text-gray-400">
               <li>
-                <span className="hover:text-white cursor-pointer transition-colors">Copilot Engine</span>
+                <span className="hover:text-white cursor-pointer transition-colors capitalize">
+                  {activeTab.replace('-', ' ')}
+                </span>
               </li>
               <li>
                 <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -114,6 +114,7 @@ export default function LuminaApp() {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-10">
+          {activeTab === "copilot" && (
           <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* Left Column: Inputs */}
@@ -121,7 +122,7 @@ export default function LuminaApp() {
               <div>
                 <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Initialize Context</h1>
                 <p className="text-gray-400 text-sm">
-                  Feed Lumina raw, unstructured data. Our multi-agent system will parse it and generate human-like outreach.
+                  Feed Nexus raw, unstructured data. Our multi-agent system will parse it and generate human-like outreach.
                 </p>
               </div>
 
@@ -153,13 +154,13 @@ export default function LuminaApp() {
                     </div>
                     <h2 className="text-xl font-semibold mb-2 text-white">Awaiting Intelligence</h2>
                     <p className="text-gray-400 text-sm max-w-sm text-balance">
-                      Input the prospect&apos;s context. Lumina&apos;s multi-agent system will analyze the data and generate strictly non-spam, human-like outreach options.
+                      Input the prospect&apos;s context. Nexus&apos;s multi-agent system will analyze the data and generate strictly non-spam, human-like outreach options.
                     </p>
                   </motion.div>
                 )}
 
                 {isGenerating && (
-                  <LoadingState progressStep={progressStep} loadingSteps={loadingSteps} />
+                  <LoadingState progressStep={progressStep} />
                 )}
 
                 {error && (
@@ -200,7 +201,11 @@ export default function LuminaApp() {
                 )}
               </AnimatePresence>
             </div>
-          </div>
+            </div>
+          )}
+          {activeTab === "workspace" && <WorkspaceHub />}
+          {activeTab === "sparring" && <SparringArena />}
+          {activeTab === "intent" && <IntentDashboard />}
         </div>
       </main>
     </div>

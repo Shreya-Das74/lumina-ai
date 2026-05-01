@@ -7,32 +7,38 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const SidebarComponent = () => {
+interface SidebarProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
+const SidebarComponent = ({ activeTab, setActiveTab }: SidebarProps) => {
   return (
     <div className="w-64 h-screen border-r border-[#222] bg-[#0A0A0A] hidden md:flex flex-col p-4">
       <div className="flex items-center gap-2 mb-10 px-2 mt-2">
         <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
           <BrainCircuit className="w-5 h-5 text-white" aria-hidden="true" />
         </div>
-        <span className="text-xl font-bold tracking-tight text-white glow-text">Lumina.ai</span>
+        <span className="text-xl font-bold tracking-tight text-white glow-text">Nexus AI</span>
       </div>
 
       <nav className="flex flex-col gap-2 flex-1" aria-label="Main Navigation">
         {[
-          { icon: Target, label: "Copilot Engine", active: true },
-          { icon: Mail, label: "Campaigns", active: false },
-          { icon: MessageSquare, label: "Sparring Arena", active: false },
-          { icon: Activity, label: "Analytics", active: false },
+          { id: "copilot", icon: Target, label: "Copilot Engine" },
+          { id: "workspace", icon: Mail, label: "Workspace Hub" },
+          { id: "sparring", icon: MessageSquare, label: "Sparring Arena" },
+          { id: "intent", icon: Activity, label: "Intent Signals" },
         ].map((item) => (
           <button
             key={item.label}
+            onClick={() => setActiveTab(item.id)}
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-              item.active 
+              activeTab === item.id 
                 ? "bg-blue-600/10 text-blue-400 border border-blue-500/20" 
                 : "text-gray-400 hover:text-gray-200 hover:bg-[#1A1A1A]"
             )}
-            aria-current={item.active ? "page" : undefined}
+            aria-current={activeTab === item.id ? "page" : undefined}
           >
             <item.icon className="w-4 h-4" aria-hidden="true" />
             {item.label}
