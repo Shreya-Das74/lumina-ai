@@ -1,101 +1,208 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronRight, Bot } from "lucide-react";
+import { Sidebar } from "../components/Sidebar";
+import { InputForm } from "../components/InputForm";
+import { LoadingState } from "../components/LoadingState";
+import { EmailCard } from "../components/EmailCard";
+import type { EmailOption } from "../types";
+
+export default function LuminaApp() {
+  const [prospectName, setProspectName] = useState("");
+  const [company, setCompany] = useState("");
+  const [context, setContext] = useState("");
+  
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [options, setOptions] = useState<EmailOption[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  
+  const [progressStep, setProgressStep] = useState(0);
+  const loadingSteps = [
+    "Ingesting prospect digital footprint...",
+    "Analyzing recent 10-K filings and news...",
+    "Routing to Empathy Agent...",
+    "Drafting hyper-personalized sequences...",
+    "Applying Enterprise safeguards..."
+  ];
+
+  useEffect(() => {
+    if (isGenerating) {
+      let currentStep = 0;
+      const interval = setInterval(() => {
+        if (currentStep < loadingSteps.length - 1) {
+          currentStep++;
+          setProgressStep(currentStep);
+        }
+      }, 1200);
+      return () => clearInterval(interval);
+    }
+  }, [isGenerating, loadingSteps.length]);
+
+  const handleGenerate = async () => {
+    if (!prospectName || !company || !context) return;
+    
+    setIsGenerating(true);
+    setError(null);
+    setOptions(null);
+    setProgressStep(0);
+
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prospectName, company, context }),
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Generation failed.");
+      }
+
+      setOptions(data.options);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Generation failed.";
+      setError(errorMessage);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCopy = useCallback((text: string, index: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  }, []);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="flex min-h-screen bg-[#050505] selection:bg-blue-500/30 text-white font-sans">
+      <Sidebar />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Header */}
+        <header className="h-16 border-b border-[#222] bg-[#0A0A0A]/80 backdrop-blur-md flex items-center px-6 justify-between shrink-0">
+          <nav aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2 text-sm text-gray-400">
+              <li>
+                <span className="hover:text-white cursor-pointer transition-colors">Copilot Engine</span>
+              </li>
+              <li>
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
+              </li>
+              <li>
+                <span className="text-white" aria-current="page">New Outreach</span>
+              </li>
+            </ol>
+          </nav>
+          <div className="flex items-center gap-3">
+            <div 
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-xs font-medium"
+              role="status"
+              aria-label="Model Status: Gemini 1.5 Pro Active"
+            >
+              <span className="relative flex h-2 w-2" aria-hidden="true">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              Gemini 1.5 Pro Active
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-10">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {/* Left Column: Inputs */}
+            <div className="lg:col-span-5 space-y-6">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Initialize Context</h1>
+                <p className="text-gray-400 text-sm">
+                  Feed Lumina raw, unstructured data. Our multi-agent system will parse it and generate human-like outreach.
+                </p>
+              </div>
+
+              <InputForm 
+                prospectName={prospectName}
+                setProspectName={setProspectName}
+                company={company}
+                setCompany={setCompany}
+                context={context}
+                setContext={setContext}
+                isGenerating={isGenerating}
+                handleGenerate={handleGenerate}
+              />
+            </div>
+
+            {/* Right Column: Output / Magic Reveal */}
+            <div className="lg:col-span-7" aria-live="polite">
+              <AnimatePresence mode="wait">
+                {!isGenerating && !options && !error && (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="h-full min-h-[400px] glass-panel rounded-2xl flex flex-col items-center justify-center text-center p-8 border-dashed border-[#333]"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-blue-900/20 border border-blue-500/30 flex items-center justify-center mb-6">
+                      <Bot className="w-8 h-8 text-blue-400" aria-hidden="true" />
+                    </div>
+                    <h2 className="text-xl font-semibold mb-2 text-white">Awaiting Intelligence</h2>
+                    <p className="text-gray-400 text-sm max-w-sm text-balance">
+                      Input the prospect&apos;s context. Lumina&apos;s multi-agent system will analyze the data and generate strictly non-spam, human-like outreach options.
+                    </p>
+                  </motion.div>
+                )}
+
+                {isGenerating && (
+                  <LoadingState progressStep={progressStep} loadingSteps={loadingSteps} />
+                )}
+
+                {error && (
+                  <motion.div
+                    key="error"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="glass-panel rounded-2xl p-6 border-red-500/30 text-red-400"
+                    role="alert"
+                  >
+                    <p className="font-semibold mb-2">System Fault</p>
+                    <p className="text-sm font-mono bg-red-500/10 p-3 rounded-lg">{error}</p>
+                  </motion.div>
+                )}
+
+                {options && !isGenerating && (
+                  <motion.div
+                    key="results"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-6"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold text-white">Generated Angles</h2>
+                      <span className="text-xs text-gray-500 font-mono">Powered by Gemini 1.5 Pro</span>
+                    </div>
+
+                    {options.map((opt, i) => (
+                      <EmailCard 
+                        key={i}
+                        index={i}
+                        option={opt}
+                        copiedIndex={copiedIndex}
+                        onCopy={handleCopy}
+                      />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
